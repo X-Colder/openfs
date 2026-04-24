@@ -1,0 +1,115 @@
+syntax = "proto3";
+package openfs;
+
+import "common.proto";
+
+// ============================================================
+// MetaService: Client <-> MetaNode
+// ============================================================
+service MetaService {
+    // File operations
+    rpc CreateFile(CreateFileReq)           returns (CreateFileResp);
+    rpc DeleteFile(DeleteFileReq)           returns (DeleteFileResp);
+    rpc GetFileInfo(GetFileInfoReq)         returns (GetFileInfoResp);
+    rpc Rename(RenameReq)                   returns (RenameResp);
+
+    // Directory operations
+    rpc MkDir(MkDirReq)                     returns (MkDirResp);
+    rpc ReadDir(ReadDirReq)                 returns (ReadDirResp);
+    rpc RmDir(RmDirReq)                     returns (RmDirResp);
+
+    // Block allocation & commit
+    rpc AllocateBlocks(AllocBlocksReq)      returns (AllocBlocksResp);
+    rpc CommitBlocks(CommitBlocksReq)       returns (CommitBlocksResp);
+    rpc GetBlockLocations(GetBlockLocsReq)  returns (GetBlockLocsResp);
+}
+
+// ---- File operations ----
+message CreateFileReq {
+    string     path       = 1;
+    uint32     mode       = 2;
+    uint32     uid        = 3;
+    uint32     gid        = 4;
+    uint64     file_size  = 5;     // hint: 0 if unknown (streaming)
+}
+message CreateFileResp {
+    int32      status     = 1;
+    InodeProto inode      = 2;
+}
+
+message DeleteFileReq {
+    string path = 1;
+}
+message DeleteFileResp {
+    int32 status = 1;
+}
+
+message GetFileInfoReq {
+    string path = 1;
+}
+message GetFileInfoResp {
+    int32      status = 1;
+    InodeProto inode  = 2;
+}
+
+message RenameReq {
+    string src_path = 1;
+    string dst_path = 2;
+}
+message RenameResp {
+    int32 status = 1;
+}
+
+// ---- Directory operations ----
+message MkDirReq {
+    string path = 1;
+    uint32 mode = 2;
+    uint32 uid  = 3;
+    uint32 gid  = 4;
+}
+message MkDirResp {
+    int32      status = 1;
+    InodeProto inode  = 2;
+}
+
+message ReadDirReq {
+    string path = 1;
+}
+message ReadDirResp {
+    int32                 status  = 1;
+    repeated DentryProto  entries = 2;
+}
+
+message RmDirReq {
+    string path = 1;
+}
+message RmDirResp {
+    int32 status = 1;
+}
+
+// ---- Block allocation & commit ----
+message AllocBlocksReq {
+    uint64     inode_id    = 1;
+    uint32     block_count = 2;
+    BlockLevel level       = 3;
+}
+message AllocBlocksResp {
+    int32                    status = 1;
+    repeated BlockMetaProto  blocks = 2;
+}
+
+message CommitBlocksReq {
+    uint64                   inode_id = 1;
+    repeated BlockMetaProto  blocks   = 2;
+}
+message CommitBlocksResp {
+    int32 status = 1;
+}
+
+message GetBlockLocsReq {
+    uint64 inode_id = 1;
+}
+message GetBlockLocsResp {
+    int32                    status = 1;
+    repeated BlockMetaProto  blocks = 2;
+}

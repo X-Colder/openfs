@@ -1,0 +1,53 @@
+syntax = "proto3";
+package openfs;
+
+import "common.proto";
+
+// ============================================================
+// NodeService: DataNode <-> MetaNode
+// ============================================================
+service NodeService {
+    rpc Register(RegisterReq)             returns (RegisterResp);
+    rpc Heartbeat(HeartbeatReq)           returns (HeartbeatResp);
+    rpc ReportBlocks(ReportBlocksReq)     returns (ReportBlocksResp);
+}
+
+message RegisterReq {
+    uint64 node_id  = 1;    // 0 if first registration
+    string address  = 2;    // host:port
+    uint64 capacity = 3;
+}
+message RegisterResp {
+    int32  status  = 1;
+    uint64 node_id = 2;     // assigned node_id
+}
+
+message DiskUsage {
+    string path      = 1;
+    uint64 total     = 2;
+    uint64 used      = 3;
+    float  io_util   = 4;   // 0.0 - 1.0
+}
+
+message HeartbeatReq {
+    uint64              node_id       = 1;
+    uint64              timestamp     = 2;
+    repeated DiskUsage  disk_usage    = 3;
+    uint32              segment_count = 4;
+    uint32              block_count   = 5;
+    uint32              active_conns  = 6;
+    float               cpu_load      = 7;
+}
+message HeartbeatResp {
+    int32 status = 1;
+    // commands from meta (e.g., delete blocks, transfer blocks)
+    repeated uint64 blocks_to_delete = 2;
+}
+
+message ReportBlocksReq {
+    uint64          node_id   = 1;
+    repeated uint64 block_ids = 2;
+}
+message ReportBlocksResp {
+    int32 status = 1;
+}

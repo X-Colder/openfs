@@ -1,0 +1,80 @@
+syntax = "proto3";
+package openfs;
+
+// Block size level
+enum BlockLevel {
+    BLOCK_LEVEL_L0 = 0;    // 64KB  - small files
+    BLOCK_LEVEL_L1 = 1;    // 512KB - medium-small files
+    BLOCK_LEVEL_L2 = 2;    // 4MB   - medium files
+    BLOCK_LEVEL_L3 = 3;    // 32MB  - large file chunks
+    BLOCK_LEVEL_L4 = 4;    // 256MB - very large file chunks
+}
+
+enum FileType {
+    FILE_TYPE_REGULAR   = 0;
+    FILE_TYPE_DIRECTORY = 1;
+    FILE_TYPE_SYMLINK   = 2;
+}
+
+enum NodeState {
+    NODE_STATE_ONLINE  = 0;
+    NODE_STATE_SUSPECT = 1;
+    NODE_STATE_OFFLINE = 2;
+}
+
+// Inode metadata
+message InodeProto {
+    uint64     inode_id    = 1;
+    FileType   file_type   = 2;
+    uint32     mode        = 3;     // permission bits
+    uint32     uid         = 4;
+    uint32     gid         = 5;
+    uint64     size        = 6;
+    uint64     nlink       = 7;
+    uint64     atime_ns    = 8;     // nanoseconds since epoch
+    uint64     mtime_ns    = 9;
+    uint64     ctime_ns    = 10;
+    BlockLevel block_level = 11;
+    bool       is_packed   = 12;
+    uint64     parent_id   = 13;
+    string     name        = 14;
+}
+
+// Block location metadata
+message BlockMetaProto {
+    uint64     block_id      = 1;
+    BlockLevel level         = 2;
+    uint32     size          = 3;    // actual data size in bytes
+    uint32     crc32         = 4;
+    uint64     node_id       = 5;
+    uint64     segment_id    = 6;
+    uint64     offset        = 7;    // offset within segment
+    uint64     create_time   = 8;
+    uint32     replica_count = 9;
+    uint32     access_count  = 10;
+}
+
+// Packed block entry for small files
+message PackedBlockEntryProto {
+    uint64 file_inode_id = 1;
+    uint64 pack_block_id = 2;
+    uint32 intra_offset  = 3;
+    uint32 intra_size    = 4;
+}
+
+// Directory entry
+message DentryProto {
+    string   name      = 1;
+    uint64   inode_id  = 2;
+    FileType file_type = 3;
+}
+
+// Data node info
+message NodeInfoProto {
+    uint64    node_id     = 1;
+    string    address     = 2;    // host:port
+    NodeState state       = 3;
+    uint64    capacity    = 4;    // total bytes
+    uint64    used        = 5;    // used bytes
+    uint64    last_heartbeat = 6;
+}

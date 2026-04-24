@@ -1,0 +1,26 @@
+CMake Error at CMakeLists.txt:16 (find_package):
+  Could not find a package configuration file provided by "spdlog" with any
+  of the following names:
+
+    spdlogConfig.cmake
+    spdlog-config.cmake
+
+  Add the installation prefix of "spdlog" to CMAKE_PREFIX_PATH or set
+  "spdlog_DIR" to a directory containing one of the above files.  If "spdlog"
+  provides a separate development package or SDK, be sure it has been
+  installed.
+
+
+CMake Error at CMakeLists.txt:16 (find_package):
+  Could not find a package configuration file provided by "spdlog" with any
+  of the following names:
+
+    spdlogConfig.cmake
+    spdlog-config.cmake
+
+  Add the installation prefix of "spdlog" to CMAKE_PREFIX_PATH or set
+  "spdlog_DIR" to a directory containing one of the above files.  If "spdlog"
+  provides a separate development package or SDK, be sure it has been
+  installed.
+
+
