@@ -1,0 +1,29 @@
+[Unit]
+Description=OpenFS DataNode Service
+Documentation=https://github.com/X-Colder/openfs
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=openfs
+Group=openfs
+ExecStart=/usr/local/bin/data_node /etc/openfs/data_node.conf
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65536
+
+# Disk device access permissions
+# The openfs user needs read/write access to raw disk devices
+# Add to disk group or set udev rules
+SupplementaryGroups=disk
+
+# Security hardening
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/openfs/data /var/log/openfs
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

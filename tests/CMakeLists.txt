@@ -53,6 +53,18 @@ add_executable(test_segment_io test_data_segment_io.cpp)
 target_link_libraries(test_segment_io data_lib GTest::gtest GTest::gtest_main)
 add_test(NAME test_segment_io COMMAND test_segment_io)
 
+add_executable(test_block_bitmap test_block_bitmap.cpp)
+target_link_libraries(test_block_bitmap data_lib GTest::gtest GTest::gtest_main)
+add_test(NAME test_block_bitmap COMMAND test_block_bitmap)
+
+add_executable(test_wal_manager test_wal_manager.cpp)
+target_link_libraries(test_wal_manager data_lib GTest::gtest GTest::gtest_main)
+add_test(NAME test_wal_manager COMMAND test_wal_manager)
+
+add_executable(test_disk_manager test_disk_manager.cpp)
+target_link_libraries(test_disk_manager data_lib GTest::gtest GTest::gtest_main)
+add_test(NAME test_disk_manager COMMAND test_disk_manager)
+
 # ============================================================
 # Integration Tests: gRPC services
 # ============================================================

@@ -3,13 +3,31 @@ project(openfs VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# Platform-specific compiler flags
+
+# ============================================================
+# Platform detection
+# ============================================================
 if(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
-    # Reduce Windows API namespace pollution
     add_compile_definitions(NOMINMAX WIN32_LEAN_AND_MEAN)
 else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pthread")
+endif()
+
+# Linux-specific settings
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    add_compile_definitions(__LINUX__)
+    # Check for liburing (io_uring) availability
+    find_package(PkgConfig)
+    if(PkgConfig_FOUND)
+        pkg_check_modules(LIBURING liburing)
+        if(LIBURING_FOUND)
+            message(STATUS "Found liburing: ${LIBURING_LIBRARIES}")
+            add_compile_definitions(HAVE_LIBURING)
+        else()
+            message(STATUS "liburing not found, io_uring support disabled")
+        endif()
+    endif()
 endif()
 
 # Homebrew prefix on macOS
@@ -101,8 +119,13 @@ add_library(meta_lib
 )
 target_link_libraries(meta_lib PUBLIC common proto_lib Threads::Threads)
 
-# Data library
+# Data library (new block-level disk management)
 add_library(data_lib
+    src/data/block_bitmap.cpp
+    src/data/wal_manager.cpp
+    src/data/block_io_engine.cpp
+    src/data/disk_manager.cpp
+    src/data/disk_pool.cpp
     src/data/segment_engine.cpp
     src/data/segment_writer.cpp
     src/data/segment_reader.cpp
@@ -111,6 +134,14 @@ add_library(data_lib
     src/data/data_service_impl.cpp
 )
 target_link_libraries(data_lib PUBLIC common meta_lib Threads::Threads)
+
+# Linux-specific link libraries
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    if(LIBURING_FOUND)
+        target_link_libraries(data_lib PUBLIC ${LIBURING_LIBRARIES})
+        target_include_directories(data_lib PUBLIC ${LIBURING_INCLUDE_DIRS})
+    endif()
+endif()
 
 # Executables
 add_executable(data_node src/data/main.cpp)

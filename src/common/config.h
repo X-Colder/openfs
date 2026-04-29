@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <cstdint>
 
 namespace openfs
@@ -20,8 +21,16 @@ namespace openfs
         std::string listen_addr = "0.0.0.0:8200";
         std::string data_dir = "/var/lib/openfs/data";
         std::string meta_addr = "127.0.0.1:8100";
-        uint64_t segment_size = 256ULL * 1024 * 1024; // 256MB
-        uint32_t max_segments = 1024;
+        uint64_t segment_size = 256ULL * 1024 * 1024; // 256MB (legacy)
+        uint32_t max_segments = 1024;                  // legacy
+
+        // New: disk-level storage pool configuration
+        // Each disk path can be a file (for testing) or a raw device path
+        std::vector<std::string> disk_paths;
+        // Default disk size in bytes when formatting new file-based disks
+        uint64_t disk_size = 16ULL * 1024 * 1024; // 16MB default for testing
+        // Number of WAL blocks per disk
+        uint64_t wal_blocks = 256; // 256 * 4KB = 1MB
     };
 
     struct ClientConfig

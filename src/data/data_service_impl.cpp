@@ -12,8 +12,8 @@ namespace openfs
                                              const WriteBlockReq *request,
                                              WriteBlockResp *response)
     {
-        LOG_DEBUG("WriteBlock: block_id={}, segment_id={}, data_size={}",
-                  request->block_id(), request->segment_id(), request->data().size());
+        LOG_DEBUG("WriteBlock: block_id={}, data_size={}",
+                  request->block_id(), request->data().size());
 
         // Verify CRC32
         uint32_t calc_crc = ComputeCRC32(request->data().data(), request->data().size());
@@ -28,14 +28,15 @@ namespace openfs
         // Select block level based on data size
         BlkLevel level = SelectBlockLevel(request->data().size());
 
-        uint64_t segment_id = 0, offset = 0;
+        uint32_t disk_id = 0;
+        uint64_t offset = 0;
         Status s = data_node_.WriteBlock(
             request->block_id(), level,
             request->data().data(), request->data().size(),
-            request->crc32(), segment_id, offset);
+            request->crc32(), disk_id, offset);
 
         response->set_status(static_cast<int32_t>(s));
-        response->set_segment_id(segment_id);
+        response->set_segment_id(disk_id); // Reuse segment_id field for disk_id
         response->set_offset(offset);
         return grpc::Status::OK;
     }
@@ -44,13 +45,17 @@ namespace openfs
                                             const ReadBlockReq *request,
                                             ReadBlockResp *response)
     {
-        LOG_DEBUG("ReadBlock: block_id={}, segment_id={}, offset={}",
-                  request->block_id(), request->segment_id(), request->offset());
+        LOG_DEBUG("ReadBlock: segment_id={}, offset={}",
+                  request->segment_id(), request->offset());
 
         std::vector<char> data;
         uint32_t crc32 = 0;
+        uint64_t block_id = 0;
 
-        Status s = data_node_.ReadBlock(request->segment_id(), request->offset(), data, crc32);
+        // segment_id is reused as disk_id
+        Status s = data_node_.ReadBlock(
+            static_cast<uint32_t>(request->segment_id()),
+            request->offset(), data, crc32, block_id);
 
         response->set_status(static_cast<int32_t>(s));
         if (s == Status::kOk)

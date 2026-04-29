@@ -1,0 +1,104 @@
+[1/80] Generating protobuf/gRPC code for common
+[2/80] Generating protobuf/gRPC code for meta_service
+[3/80] Generating protobuf/gRPC code for node_service
+D:/workspace/llm/openfs/proto/node_service.proto:4:1: warning: Import common.proto is unused.
+[4/80] Generating protobuf/gRPC code for data_service
+D:/workspace/llm/openfs/proto/data_service.proto:4:1: warning: Import common.proto is unused.
+[5/80] Building CXX object CMakeFiles\common.dir\src\common\crc32.cpp.obj
+[6/80] Building CXX object CMakeFiles\common.dir\src\common\types.cpp.obj
+[7/80] Building CXX object CMakeFiles\common.dir\src\common\id_generator.cpp.obj
+[8/80] Building CXX object CMakeFiles\common.dir\src\common\logging.cpp.obj
+[9/80] Building CXX object CMakeFiles\meta_lib.dir\src\meta\block_map.cpp.obj
+[10/80] Building CXX object CMakeFiles\meta_lib.dir\src\meta\inode_table.cpp.obj
+[11/80] Building CXX object CMakeFiles\common.dir\src\common\config.cpp.obj
+[12/80] Building CXX object tests\CMakeFiles\test_types.dir\test_common_types.cpp.obj
+[13/80] Building CXX object CMakeFiles\meta_lib.dir\src\meta\namespace_manager.cpp.obj
+[14/80] Building CXX object tests\CMakeFiles\test_utils.dir\test_util.cpp.obj
+[15/80] Linking CXX static library common.lib
+[16/80] Building CXX object tests\CMakeFiles\test_id_generator.dir\test_common_id_generator.cpp.obj
+[17/80] Building CXX object CMakeFiles\meta_lib.dir\src\meta\node_manager.cpp.obj
+[18/80] Building CXX object CMakeFiles\meta_lib.dir\src\meta\block_allocator.cpp.obj
+[19/80] Building CXX object tests\CMakeFiles\test_config.dir\test_common_config.cpp.obj
+[20/80] Building CXX object tests\CMakeFiles\test_crc32.dir\test_common_crc32.cpp.obj
+[21/80] Building CXX object CMakeFiles\data_lib.dir\src\data\block_bitmap.cpp.obj
+[22/80] Building CXX object CMakeFiles\data_lib.dir\src\data\block_io_engine.cpp.obj
+[23/80] Building CXX object CMakeFiles\data_lib.dir\src\data\wal_manager.cpp.obj
+[24/80] Building CXX object CMakeFiles\data_lib.dir\src\data\segment_writer.cpp.obj
+[25/80] Building CXX object CMakeFiles\data_lib.dir\src\data\disk_pool.cpp.obj
+[26/80] Building CXX object CMakeFiles\data_lib.dir\src\data\segment_sealer.cpp.obj
+[27/80] Building CXX object CMakeFiles\data_lib.dir\src\data\segment_reader.cpp.obj
+[28/80] Building CXX object CMakeFiles\data_lib.dir\src\data\disk_manager.cpp.obj
+D:\workspace\llm\openfs\src\data\disk_manager.cpp(50): warning C4189: “wal_offset”: 局部变量已初始化但不引用
+D:\workspace\llm\openfs\src\data\disk_manager.cpp(31): warning C4189: “sb_block”: 局部变量已初始化但不引用
+[29/80] Building CXX object CMakeFiles\data_lib.dir\src\data\segment_engine.cpp.obj
+[30/80] Building CXX object CMakeFiles\proto_lib.dir\proto\common.pb.cc.obj
+[31/80] Building CXX object CMakeFiles\proto_lib.dir\proto\data_service.pb.cc.obj
+[32/80] Building CXX object CMakeFiles\proto_lib.dir\proto\meta_service.pb.cc.obj
+[33/80] Building CXX object CMakeFiles\proto_lib.dir\proto\node_service.pb.cc.obj
+[34/80] Building CXX object tests\CMakeFiles\test_inode_table.dir\test_meta_inode_table.cpp.obj
+[35/80] Building CXX object tests\CMakeFiles\test_block_allocator.dir\test_meta_block_allocator.cpp.obj
+[36/80] Building CXX object tests\CMakeFiles\test_block_bitmap.dir\test_block_bitmap.cpp.obj
+[37/80] Building CXX object tests\CMakeFiles\test_node_manager.dir\test_meta_node_manager.cpp.obj
+[38/80] Building CXX object tests\CMakeFiles\test_block_map.dir\test_meta_block_map.cpp.obj
+[39/80] Building CXX object CMakeFiles\proto_lib.dir\proto\common.grpc.pb.cc.obj
+[40/80] Building CXX object tests\CMakeFiles\test_namespace_manager.dir\test_meta_namespace_manager.cpp.obj
+[41/80] Building CXX object CMakeFiles\proto_lib.dir\proto\data_service.grpc.pb.cc.obj
+[42/80] Linking CXX static library tests\test_utils.lib
+[43/80] Building CXX object CMakeFiles\proto_lib.dir\proto\node_service.grpc.pb.cc.obj
+[44/80] Building CXX object tests\CMakeFiles\test_segment_io.dir\test_data_segment_io.cpp.obj
+[45/80] Building CXX object tests\CMakeFiles\test_wal_manager.dir\test_wal_manager.cpp.obj
+[46/80] Building CXX object CMakeFiles\proto_lib.dir\proto\meta_service.grpc.pb.cc.obj
+[47/80] Linking CXX static library proto_lib.lib
+[48/80] Linking CXX executable tests\test_crc32.exe
+[49/80] Linking CXX executable tests\test_types.exe
+[50/80] Linking CXX executable tests\test_id_generator.exe
+[51/80] Linking CXX executable tests\test_config.exe
+[52/80] Building CXX object tests\CMakeFiles\test_disk_manager.dir\test_disk_manager.cpp.obj
+D:\workspace\llm\openfs\tests\test_disk_manager.cpp(198): warning C4189: “free_blocks”: 局部变量已初始化但不引用
+[53/80] Building CXX object CMakeFiles\meta_lib.dir\src\meta\meta_node_client.cpp.obj
+[54/80] Building CXX object CMakeFiles\meta_lib.dir\src\meta\meta_node.cpp.obj
+[55/80] Building CXX object CMakeFiles\meta_lib.dir\src\meta\meta_service_impl.cpp.obj
+D:\workspace\llm\openfs\src\meta\meta_service_impl.cpp(25): warning C4100: 'ctx': 未引用的参数
+D:\workspace\llm\openfs\src\meta\meta_service_impl.cpp(41): warning C4100: 'ctx': 未引用的参数
+D:\workspace\llm\openfs\src\meta\meta_service_impl.cpp(62): warning C4100: 'req': 未引用的参数
+D:\workspace\llm\openfs\src\meta\meta_service_impl.cpp(61): warning C4100: 'ctx': 未引用的参数
+D:\workspace\llm\openfs\src\meta\meta_service_impl.cpp(140): warning C4100: 'ctx': 未引用的参数
+D:\workspace\llm\openfs\src\meta\meta_service_impl.cpp(157): warning C4100: 'ctx': 未引用的参数
+D:\workspace\llm\openfs\src\meta\meta_service_impl.cpp(167): warning C4100: 'ctx': 未引用的参数
+D:\workspace\llm\openfs\src\meta\meta_service_impl.cpp(182): warning C4100: 'ctx': 未引用的参数
+D:\workspace\llm\openfs\src\meta\meta_service_impl.cpp(193): warning C4100: 'ctx': 未引用的参数
+D:\workspace\llm\openfs\src\meta\meta_service_impl.cpp(209): warning C4100: 'ctx': 未引用的参数
+D:\workspace\llm\openfs\src\meta\meta_service_impl.cpp(227): warning C4100: 'ctx': 未引用的参数
+D:\workspace\llm\openfs\src\meta\meta_service_impl.cpp(238): warning C4100: 'ctx': 未引用的参数
+D:\workspace\llm\openfs\src\meta\meta_service_impl.cpp(280): warning C4244: “=”: 从“uint32_t”转换到“uint16_t”，可能丢失数据
+D:\workspace\llm\openfs\src\meta\meta_service_impl.cpp(260): warning C4100: 'ctx': 未引用的参数
+D:\workspace\llm\openfs\src\meta\meta_service_impl.cpp(308): warning C4100: 'ctx': 未引用的参数
+[56/80] Building CXX object CMakeFiles\data_lib.dir\src\data\data_node.cpp.obj
+[57/80] Building CXX object CMakeFiles\data_lib.dir\src\data\data_service_impl.cpp.obj
+D:\workspace\llm\openfs\src\data\data_service_impl.cpp(35): warning C4267: “参数”: 从“size_t”转换到“uint32_t”，可能丢失数据
+D:\workspace\llm\openfs\src\data\data_service_impl.cpp(11): warning C4100: 'context': 未引用的参数
+D:\workspace\llm\openfs\src\data\data_service_impl.cpp(44): warning C4100: 'context': 未引用的参数
+D:\workspace\llm\openfs\src\data\data_service_impl.cpp(69): warning C4100: 'context': 未引用的参数
+[58/80] Linking CXX static library meta_lib.lib
+[59/80] Linking CXX static library data_lib.lib
+[60/80] Building CXX object CMakeFiles\data_node.dir\src\data\main.cpp.obj
+[61/80] Building CXX object CMakeFiles\meta_node.dir\src\meta\main.cpp.obj
+[62/80] Building CXX object tests\CMakeFiles\test_meta_service.dir\test_meta_service.cpp.obj
+[63/80] Linking CXX executable tests\test_node_manager.exe
+[64/80] Linking CXX executable tests\test_block_bitmap.exe
+[65/80] Linking CXX executable tests\test_block_allocator.exe
+[66/80] Linking CXX executable tests\test_block_map.exe
+[67/80] Linking CXX executable tests\test_inode_table.exe
+[68/80] Linking CXX executable tests\test_segment_io.exe
+[69/80] Linking CXX executable tests\test_wal_manager.exe
+[70/80] Linking CXX executable tests\test_namespace_manager.exe
+[71/80] Linking CXX executable tests\test_disk_manager.exe
+[72/80] Building CXX object tests\CMakeFiles\test_data_service.dir\test_data_service.cpp.obj
+[73/80] Building CXX object tests\CMakeFiles\test_node_service.dir\test_node_service.cpp.obj
+[74/80] Building CXX object tests\CMakeFiles\test_e2e_pipeline.dir\test_e2e_pipeline.cpp.obj
+[75/80] Linking CXX executable tests\test_node_service.exe
+[76/80] Linking CXX executable meta_node.exe
+[77/80] Linking CXX executable data_node.exe
+[78/80] Linking CXX executable tests\test_e2e_pipeline.exe
+[79/80] Linking CXX executable tests\test_meta_service.exe
+[80/80] Linking CXX executable tests\test_data_service.exe

@@ -1,0 +1,25 @@
+[Unit]
+Description=OpenFS MetaNode Service
+Documentation=https://github.com/X-Colder/openfs
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=openfs
+Group=openfs
+ExecStart=/usr/local/bin/meta_node /etc/openfs/meta_node.conf
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65536
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/openfs/meta /var/log/openfs
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
