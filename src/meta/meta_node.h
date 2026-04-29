@@ -26,6 +26,7 @@ namespace openfs
 
         MetaNodeConfig config_;
         MetaServiceImpl meta_service_;
+        std::unique_ptr<NodeServiceImpl> node_service_;
 
         std::unique_ptr<grpc::Server> server_;
         std::atomic<bool> running_{false};

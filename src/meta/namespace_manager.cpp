@@ -179,15 +179,17 @@ namespace openfs
             bool found = false;
             for (const auto &e : pit->second)
             {
-                if (e.name == dirname && e.file_type == InodeType::kDirectory)
+                if (e.name == dirname)
                 {
+                    if (e.file_type != InodeType::kDirectory)
+                        return Status::kNotDirectory;
                     dir_inode.inode_id = e.inode_id;
                     found = true;
                     break;
                 }
             }
             if (!found)
-                return Status::kNotDirectory;
+                return Status::kNotFound;
         }
 
         auto dit = dir_entries_.find(dir_inode.inode_id);

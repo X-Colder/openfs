@@ -21,8 +21,7 @@ namespace openfs
         auto it = inode_blocks_.find(inode_id);
         if (it == inode_blocks_.end())
         {
-            blocks.clear();
-            return Status::kOk; // no blocks yet is valid
+            return Status::kNotFound;
         }
         blocks.clear();
         blocks.reserve(it->second.size());
@@ -51,14 +50,15 @@ namespace openfs
     {
         std::lock_guard<std::mutex> lock(mutex_);
         auto it = inode_blocks_.find(inode_id);
-        if (it != inode_blocks_.end())
+        if (it == inode_blocks_.end())
         {
-            for (auto bid : it->second)
-            {
-                block_metas_.erase(bid);
-            }
-            inode_blocks_.erase(it);
+            return Status::kNotFound;
         }
+        for (auto bid : it->second)
+        {
+            block_metas_.erase(bid);
+        }
+        inode_blocks_.erase(it);
         return Status::kOk;
     }
 

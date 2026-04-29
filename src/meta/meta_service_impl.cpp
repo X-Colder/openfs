@@ -2,11 +2,81 @@
 #include "common/logging.h"
 #include "common/id_generator.h"
 
+// Undefine Windows macros that conflict with our internal method names
+// (NamespaceManager::CreateFile, NamespaceManager::DeleteFile)
+// These macros are defined in <windows.h> which is indirectly included by gRPC/protobuf
+#ifdef CreateFile
+#undef CreateFile
+#endif
+#ifdef DeleteFile
+#undef DeleteFile
+#endif
+
 namespace openfs
 {
 
+    // ============================================================
+    // NodeServiceImpl
+    // ============================================================
+
+    NodeServiceImpl::NodeServiceImpl(NodeManager &node_mgr, BlockMap &block_map)
+        : node_mgr_(node_mgr), block_map_(block_map) {}
+
+    grpc::Status NodeServiceImpl::Register(grpc::ServerContext *ctx,
+                                           const RegisterReq *req,
+                                           RegisterResp *resp)
+    {
+        LOG_INFO("NodeService::Register: address={}, capacity={}",
+                 req->address(), req->capacity());
+
+        uint64_t node_id = node_mgr_.RegisterNode(req->address(), req->capacity());
+        resp->set_status(static_cast<int32_t>(Status::kOk));
+        resp->set_node_id(node_id);
+
+        LOG_INFO("Registered DataNode {} at {} with capacity {}",
+                 node_id, req->address(), req->capacity());
+        return grpc::Status::OK;
+    }
+
+    grpc::Status NodeServiceImpl::Heartbeat(grpc::ServerContext *ctx,
+                                            const HeartbeatReq *req,
+                                            HeartbeatResp *resp)
+    {
+        LOG_DEBUG("NodeService::Heartbeat: node_id={}, block_count={}, cpu_load={}",
+                  req->node_id(), req->block_count(), req->cpu_load());
+
+        // Calculate total used from disk usage
+        uint64_t total_used = 0;
+        for (const auto &disk : req->disk_usage())
+        {
+            total_used += disk.used();
+        }
+
+        node_mgr_.UpdateHeartbeat(req->node_id(), total_used);
+        resp->set_status(static_cast<int32_t>(Status::kOk));
+        // TODO: check for blocks that need to be deleted/migrated
+        return grpc::Status::OK;
+    }
+
+    grpc::Status NodeServiceImpl::ReportBlocks(grpc::ServerContext *ctx,
+                                               const ReportBlocksReq *req,
+                                               ReportBlocksResp *resp)
+    {
+        LOG_DEBUG("NodeService::ReportBlocks: node_id={}, block_count={}",
+                  req->node_id(), req->block_ids_size());
+
+        // TODO: reconcile reported blocks with BlockMap metadata
+        resp->set_status(static_cast<int32_t>(Status::kOk));
+        return grpc::Status::OK;
+    }
+
+    // ============================================================
+    // MetaServiceImpl
+    // ============================================================
+
     MetaServiceImpl::MetaServiceImpl()
-        : namespace_mgr_(inode_table_) {}
+        : namespace_mgr_(inode_table_),
+          block_allocator_(node_mgr_) {}
 
     // ---- Helper: Inode -> InodeProto ----
     void MetaServiceImpl::FillInodeProto(const Inode &inode, InodeProto *proto)
@@ -52,12 +122,26 @@ namespace openfs
         }
     }
 
-    // ---- File operations ----
-    grpc::Status MetaServiceImpl::CreateFile(grpc::ServerContext *ctx,
-                                             const CreateFileReq *req,
-                                             CreateFileResp *resp)
+    void MetaServiceImpl::FillBlockMetaProto(const BlockMeta &block, BlockMetaProto *proto)
     {
-        LOG_DEBUG("CreateFile: path={}", req->path());
+        proto->set_block_id(block.block_id);
+        proto->set_level(static_cast<::openfs::BlockLevel>(static_cast<int>(block.level)));
+        proto->set_size(block.size);
+        proto->set_crc32(block.crc32);
+        proto->set_node_id(block.node_id);
+        proto->set_segment_id(block.segment_id);
+        proto->set_offset(block.offset);
+        proto->set_create_time(block.create_time);
+        proto->set_replica_count(block.replica_count);
+        proto->set_access_count(block.access_count);
+    }
+
+    // ---- File operations ----
+    grpc::Status MetaServiceImpl::CreateFsFile(grpc::ServerContext *ctx,
+                                               const CreateFsFileReq *req,
+                                               CreateFsFileResp *resp)
+    {
+        LOG_DEBUG("CreateFsFile: path={}", req->path());
         Inode out;
         Status s = namespace_mgr_.CreateFile(req->path(), req->mode(),
                                              req->uid(), req->gid(),
@@ -70,11 +154,11 @@ namespace openfs
         return grpc::Status::OK;
     }
 
-    grpc::Status MetaServiceImpl::DeleteFile(grpc::ServerContext *ctx,
-                                             const DeleteFileReq *req,
-                                             DeleteFileResp *resp)
+    grpc::Status MetaServiceImpl::RemoveFsFile(grpc::ServerContext *ctx,
+                                               const RemoveFsFileReq *req,
+                                               RemoveFsFileResp *resp)
     {
-        LOG_DEBUG("DeleteFile: path={}", req->path());
+        LOG_DEBUG("RemoveFsFile: path={}", req->path());
         Status s = namespace_mgr_.DeleteFile(req->path());
         resp->set_status(static_cast<int32_t>(s));
         return grpc::Status::OK;
@@ -150,14 +234,26 @@ namespace openfs
         return grpc::Status::OK;
     }
 
-    // ---- Block allocation & commit (stubs for Phase 1) ----
+    // ---- Block allocation & commit ----
     grpc::Status MetaServiceImpl::AllocateBlocks(grpc::ServerContext *ctx,
                                                  const AllocBlocksReq *req,
                                                  AllocBlocksResp *resp)
     {
-        LOG_WARN("AllocateBlocks: not fully implemented yet");
-        resp->set_status(static_cast<int32_t>(Status::kOk));
-        // TODO: allocate block IDs, pick data nodes, return BlockMetaProto
+        LOG_DEBUG("AllocateBlocks: inode_id={}, block_count={}, level={}",
+                  req->inode_id(), req->block_count(),
+                  static_cast<int>(req->level()));
+
+        std::vector<BlockMeta> blocks;
+        BlkLevel level = static_cast<BlkLevel>(static_cast<int>(req->level()));
+        Status s = block_allocator_.Allocate(req->block_count(), level, blocks);
+        resp->set_status(static_cast<int32_t>(s));
+        if (s == Status::kOk)
+        {
+            for (const auto &blk : blocks)
+            {
+                FillBlockMetaProto(blk, resp->add_blocks());
+            }
+        }
         return grpc::Status::OK;
     }
 
@@ -165,9 +261,47 @@ namespace openfs
                                                const CommitBlocksReq *req,
                                                CommitBlocksResp *resp)
     {
-        LOG_WARN("CommitBlocks: not fully implemented yet");
-        resp->set_status(static_cast<int32_t>(Status::kOk));
-        // TODO: commit block metadata after DataNode confirms write
+        LOG_DEBUG("CommitBlocks: inode_id={}, block_count={}",
+                  req->inode_id(), req->blocks_size());
+
+        std::vector<BlockMeta> blocks;
+        blocks.reserve(req->blocks_size());
+        for (const auto &bp : req->blocks())
+        {
+            BlockMeta bm;
+            bm.block_id = bp.block_id();
+            bm.level = static_cast<BlkLevel>(static_cast<int>(bp.level()));
+            bm.size = bp.size();
+            bm.crc32 = bp.crc32();
+            bm.node_id = bp.node_id();
+            bm.segment_id = bp.segment_id();
+            bm.offset = bp.offset();
+            bm.create_time = bp.create_time();
+            bm.replica_count = bp.replica_count();
+            bm.access_count = bp.access_count();
+            blocks.push_back(bm);
+        }
+
+        Status s = block_map_.AddBlocks(req->inode_id(), blocks);
+        resp->set_status(static_cast<int32_t>(s));
+
+        // Update inode size based on committed blocks
+        if (s == Status::kOk)
+        {
+            Inode inode;
+            if (inode_table_.Get(req->inode_id(), inode) == Status::kOk)
+            {
+                uint64_t total_size = 0;
+                for (const auto &blk : blocks)
+                {
+                    total_size += blk.size;
+                }
+                inode.size = total_size;
+                inode.mtime_ns = NowNs();
+                inode.ctime_ns = NowNs();
+                inode_table_.Update(inode);
+            }
+        }
         return grpc::Status::OK;
     }
 
@@ -175,9 +309,18 @@ namespace openfs
                                                     const GetBlockLocsReq *req,
                                                     GetBlockLocsResp *resp)
     {
-        LOG_WARN("GetBlockLocations: not fully implemented yet");
-        resp->set_status(static_cast<int32_t>(Status::kOk));
-        // TODO: return block locations for a given inode
+        LOG_DEBUG("GetBlockLocations: inode_id={}", req->inode_id());
+
+        std::vector<BlockMeta> blocks;
+        Status s = block_map_.GetBlocks(req->inode_id(), blocks);
+        resp->set_status(static_cast<int32_t>(s));
+        if (s == Status::kOk)
+        {
+            for (const auto &blk : blocks)
+            {
+                FillBlockMetaProto(blk, resp->add_blocks());
+            }
+        }
         return grpc::Status::OK;
     }
 

@@ -19,8 +19,9 @@ message WriteBlockReq {
     bytes  data       = 4;
 }
 message WriteBlockResp {
-    int32  status = 1;
-    uint64 offset = 2;    // actual offset within segment
+    int32  status     = 1;
+    uint64 segment_id = 2;
+    uint64 offset     = 3;    // actual offset within segment
 }
 
 message ReadBlockReq {

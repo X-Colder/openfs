@@ -11,9 +11,15 @@ namespace openfs
     {
         LOG_INFO("Starting MetaNode on {}", config_.listen_addr);
 
+        // Create NodeService implementation, sharing NodeManager and BlockMap with MetaService
+        node_service_ = std::make_unique<NodeServiceImpl>(
+            meta_service_.GetNodeManager(),
+            meta_service_.GetBlockMap());
+
         grpc::ServerBuilder builder;
         builder.AddListeningPort(config_.listen_addr, grpc::InsecureServerCredentials());
         builder.RegisterService(&meta_service_);
+        builder.RegisterService(node_service_.get());
 
         server_ = builder.BuildAndStart();
         if (!server_)
@@ -61,7 +67,7 @@ namespace openfs
     {
         while (running_)
         {
-            // TODO: Check DataNode heartbeats, detect failures
+            // TODO: Check DataNode heartbeats, detect failures, trigger rebuild
             std::this_thread::sleep_for(std::chrono::seconds(10));
         }
     }

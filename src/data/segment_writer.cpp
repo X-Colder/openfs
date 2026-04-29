@@ -88,6 +88,9 @@ namespace openfs
         out_offset = current_offset_;
         current_offset_ += kBlockHeaderSize + data_size;
 
+        // Flush to ensure data is visible to readers (important on Windows)
+        file_.flush();
+
         LOG_DEBUG("Wrote block {} ({}B) to segment {} at offset {}",
                   block_id, data_size, segment_id_, out_offset);
         return Status::kOk;

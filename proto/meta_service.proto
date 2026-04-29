@@ -8,8 +8,8 @@ import "common.proto";
 // ============================================================
 service MetaService {
     // File operations
-    rpc CreateFile(CreateFileReq)           returns (CreateFileResp);
-    rpc DeleteFile(DeleteFileReq)           returns (DeleteFileResp);
+    rpc CreateFsFile(CreateFsFileReq)       returns (CreateFsFileResp);
+    rpc RemoveFsFile(RemoveFsFileReq)       returns (RemoveFsFileResp);
     rpc GetFileInfo(GetFileInfoReq)         returns (GetFileInfoResp);
     rpc Rename(RenameReq)                   returns (RenameResp);
 
@@ -25,22 +25,22 @@ service MetaService {
 }
 
 // ---- File operations ----
-message CreateFileReq {
+message CreateFsFileReq {
     string     path       = 1;
     uint32     mode       = 2;
     uint32     uid        = 3;
     uint32     gid        = 4;
     uint64     file_size  = 5;     // hint: 0 if unknown (streaming)
 }
-message CreateFileResp {
+message CreateFsFileResp {
     int32      status     = 1;
     InodeProto inode      = 2;
 }
 
-message DeleteFileReq {
+message RemoveFsFileReq {
     string path = 1;
 }
-message DeleteFileResp {
+message RemoveFsFileResp {
     int32 status = 1;
 }
 

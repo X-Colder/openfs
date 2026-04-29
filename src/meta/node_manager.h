@@ -29,7 +29,7 @@ namespace openfs
 
     private:
         std::unordered_map<uint64_t, NodeInfo> nodes_;
-        std::mutex mutex_;
+        mutable std::mutex mutex_;
         uint64_t next_node_id_ = 1;
     };
 

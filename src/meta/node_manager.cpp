@@ -41,6 +41,7 @@ namespace openfs
 
     bool NodeManager::HasOnlineNodes() const
     {
+        std::lock_guard<std::mutex> lock(mutex_);
         for (const auto &[id, info] : nodes_)
         {
             if (info.online)

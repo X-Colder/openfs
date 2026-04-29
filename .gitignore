@@ -1,0 +1,27 @@
+# Build directories
+build/
+
+# IDE
+.vs/
+.vscode/
+*.user
+*.suo
+*.sln
+*.vcxproj*
+
+# vcpkg
+vcpkg/
+
+# Compiled files
+*.o
+*.obj
+*.exe
+*.dll
+*.lib
+*.pdb
+*.ilk
+*.exp
+
+# OS
+Thumbs.db
+Desktop.ini

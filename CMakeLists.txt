@@ -3,7 +3,14 @@ project(openfs VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pthread")
+# Platform-specific compiler flags
+if(MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    # Reduce Windows API namespace pollution
+    add_compile_definitions(NOMINMAX WIN32_LEAN_AND_MEAN)
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pthread")
+endif()
 
 # Homebrew prefix on macOS
 if(APPLE)
@@ -75,6 +82,25 @@ add_library(common
 )
 target_link_libraries(common PUBLIC spdlog::spdlog Threads::Threads)
 
+# Proto library (shared protobuf + gRPC generated code)
+add_library(proto_lib
+    ${PROTO_SRCS} ${GRPC_SRCS}
+)
+target_link_libraries(proto_lib PUBLIC protobuf::libprotobuf gRPC::grpc++)
+
+# Meta library
+add_library(meta_lib
+    src/meta/meta_service_impl.cpp
+    src/meta/inode_table.cpp
+    src/meta/namespace_manager.cpp
+    src/meta/block_map.cpp
+    src/meta/block_allocator.cpp
+    src/meta/node_manager.cpp
+    src/meta/meta_node.cpp
+    src/meta/meta_node_client.cpp
+)
+target_link_libraries(meta_lib PUBLIC common proto_lib Threads::Threads)
+
 # Data library
 add_library(data_lib
     src/data/segment_engine.cpp
@@ -83,19 +109,8 @@ add_library(data_lib
     src/data/segment_sealer.cpp
     src/data/data_node.cpp
     src/data/data_service_impl.cpp
-    ${PROTO_SRCS} ${GRPC_SRCS}
 )
-target_link_libraries(data_lib PUBLIC common protobuf::libprotobuf gRPC::grpc++ Threads::Threads)
-
-# Meta library
-add_library(meta_lib
-    src/meta/meta_service_impl.cpp
-    src/meta/inode_table.cpp
-    src/meta/namespace_manager.cpp
-    src/meta/meta_node.cpp
-    ${PROTO_SRCS} ${GRPC_SRCS}
-)
-target_link_libraries(meta_lib PUBLIC common protobuf::libprotobuf gRPC::grpc++ Threads::Threads)
+target_link_libraries(data_lib PUBLIC common meta_lib Threads::Threads)
 
 # Executables
 add_executable(data_node src/data/main.cpp)
@@ -106,3 +121,14 @@ target_link_libraries(meta_node meta_lib)
 
 install(TARGETS data_node meta_node RUNTIME DESTINATION bin)
 install(FILES configs/data_node.conf configs/meta_node.conf DESTINATION etc/openfs)
+
+# ============================================================
+# Testing
+# ============================================================
+option(BUILD_TESTS "Build tests" ON)
+
+if(BUILD_TESTS)
+    enable_testing()
+    find_package(GTest CONFIG REQUIRED)
+    add_subdirectory(tests)
+endif()

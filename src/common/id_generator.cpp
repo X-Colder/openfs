@@ -1,6 +1,7 @@
 #include "common/id_generator.h"
 #include <chrono>
 #include <thread>
+#include <new>
 
 namespace openfs
 {
@@ -49,20 +50,19 @@ namespace openfs
         return sequential_counter_.fetch_add(1) + 1;
     }
 
-    // Global singleton
-    static IdGenerator *g_id_gen = nullptr;
-
+    // Global singleton using static local variable (thread-safe in C++11+)
     IdGenerator &GetIdGenerator()
     {
-        if (!g_id_gen)
-            g_id_gen = new IdGenerator(0);
-        return *g_id_gen;
+        static IdGenerator g_id_gen(0);
+        return g_id_gen;
     }
 
     void InitIdGenerator(uint16_t node_id)
     {
-        delete g_id_gen;
-        g_id_gen = new IdGenerator(node_id);
+        // Use placement-new to reinitialize the singleton in-place,
+        // since std::atomic members make copy-assignment deleted.
+        GetIdGenerator().~IdGenerator();
+        new (&GetIdGenerator()) IdGenerator(node_id);
     }
 
 } // namespace openfs

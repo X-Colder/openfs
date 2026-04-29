@@ -15,6 +15,12 @@ namespace openfs
 
     bool Config::LoadFromFile(const std::string &path)
     {
+        // Reset to defaults before loading, so partial configs
+        // still get default values for unspecified fields.
+        meta_config_ = MetaNodeConfig{};
+        data_config_ = DataNodeConfig{};
+        client_config_ = ClientConfig{};
+
         std::ifstream file(path);
         if (!file.is_open())
         {

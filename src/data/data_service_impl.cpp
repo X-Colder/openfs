@@ -25,14 +25,17 @@ namespace openfs
             return grpc::Status::OK;
         }
 
+        // Select block level based on data size
+        BlkLevel level = SelectBlockLevel(request->data().size());
+
         uint64_t segment_id = 0, offset = 0;
-        // Use L2 as default level for now; proto doesn't carry level
         Status s = data_node_.WriteBlock(
-            request->block_id(), BlkLevel::L2,
+            request->block_id(), level,
             request->data().data(), request->data().size(),
             request->crc32(), segment_id, offset);
 
         response->set_status(static_cast<int32_t>(s));
+        response->set_segment_id(segment_id);
         response->set_offset(offset);
         return grpc::Status::OK;
     }
@@ -64,10 +67,8 @@ namespace openfs
     {
         LOG_DEBUG("DeleteBlock: block_id={}", request->block_id());
 
-        // TODO: Implement actual block deletion
-        // For now, just mark as not implemented
-        response->set_status(static_cast<int32_t>(Status::kOk));
-        LOG_WARN("DeleteBlock not fully implemented yet");
+        Status s = data_node_.DeleteBlock(request->block_id());
+        response->set_status(static_cast<int32_t>(s));
         return grpc::Status::OK;
     }
 
