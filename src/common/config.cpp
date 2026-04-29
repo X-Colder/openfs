@@ -73,6 +73,27 @@ namespace openfs
             data_config_.segment_size = std::stoull(kv["data.segment_size"]);
         if (kv.count("data.max_segments"))
             data_config_.max_segments = static_cast<uint32_t>(std::stoul(kv["data.max_segments"]));
+        if (kv.count("data.disk_paths"))
+        {
+            std::istringstream iss(kv["data.disk_paths"]);
+            std::string path;
+            data_config_.disk_paths.clear();
+            while (std::getline(iss, path, ','))
+            {
+                auto trim = [](std::string &s)
+                {
+                    s.erase(0, s.find_first_not_of(" \t\r\n"));
+                    s.erase(s.find_last_not_of(" \t\r\n") + 1);
+                };
+                trim(path);
+                if (!path.empty())
+                    data_config_.disk_paths.push_back(path);
+            }
+        }
+        if (kv.count("data.disk_size"))
+            data_config_.disk_size = std::stoull(kv["data.disk_size"]);
+        if (kv.count("data.wal_blocks"))
+            data_config_.wal_blocks = std::stoull(kv["data.wal_blocks"]);
 
         // Populate ClientConfig
         if (kv.count("client.meta_addr"))

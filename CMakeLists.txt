@@ -116,6 +116,9 @@ add_library(meta_lib
     src/meta/node_manager.cpp
     src/meta/meta_node.cpp
     src/meta/meta_node_client.cpp
+    src/meta/repair_manager.cpp
+    src/meta/rebalance_manager.cpp
+    src/meta/heat_tracker.cpp
 )
 target_link_libraries(meta_lib PUBLIC common proto_lib Threads::Threads)
 
@@ -132,6 +135,7 @@ add_library(data_lib
     src/data/segment_sealer.cpp
     src/data/data_node.cpp
     src/data/data_service_impl.cpp
+    src/data/l2_cache.cpp
 )
 target_link_libraries(data_lib PUBLIC common meta_lib Threads::Threads)
 
@@ -143,6 +147,28 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     endif()
 endif()
 
+# Client library
+add_library(client_lib
+    src/client/openfs_client.cpp
+    src/client/meta_connection.cpp
+    src/client/data_connection.cpp
+    src/client/block_splitter.cpp
+    src/client/metadata_cache.cpp
+)
+target_link_libraries(client_lib PUBLIC common proto_lib Threads::Threads)
+
+# FUSE library
+add_library(fuse_lib
+    src/fuse/openfs_fuse.cpp
+)
+target_link_libraries(fuse_lib PUBLIC client_lib)
+
+# S3 Gateway library
+add_library(s3_lib
+    src/s3/s3_server.cpp
+)
+target_link_libraries(s3_lib PUBLIC client_lib)
+
 # Executables
 add_executable(data_node src/data/main.cpp)
 target_link_libraries(data_node data_lib)
@@ -150,7 +176,10 @@ target_link_libraries(data_node data_lib)
 add_executable(meta_node src/meta/main.cpp)
 target_link_libraries(meta_node meta_lib)
 
-install(TARGETS data_node meta_node RUNTIME DESTINATION bin)
+add_executable(openfs_cli src/cli/openfs_cli.cpp)
+target_link_libraries(openfs_cli client_lib)
+
+install(TARGETS data_node meta_node openfs_cli RUNTIME DESTINATION bin)
 install(FILES configs/data_node.conf configs/meta_node.conf DESTINATION etc/openfs)
 
 # ============================================================

@@ -3,12 +3,13 @@
 #include <string>
 #include <filesystem>
 #include <cstdlib>
+#include <unistd.h>
 
 #ifdef _WIN32
 #include <process.h>
 #define GET_PID() _getpid()
 #else
-#define GET_PID() ::getpid()
+#define GET_PID() getpid()
 #endif
 
 namespace openfs
